@@ -1,0 +1,31 @@
+main{
+    display: flex;
+    justify-content: center;
+}
+form{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+header{
+    text-align: center;
+}
+.movies{
+    list-style: none;
+    display: grid;
+    width: 100%;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+}
+.movie{
+    margin: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+.movie h3, .movie p{
+    padding: 5px;
+    margin: 0;
+}
