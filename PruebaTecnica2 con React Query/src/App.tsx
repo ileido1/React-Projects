@@ -3,58 +3,20 @@ import "./App.css";
 import { SortBy, type User } from "./types.d";
 import UsersList from "./components/UsersLists";
 import { Options } from "./components/Options";
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
+import { useUsers } from "./hooks/useUser";
 
-const fetchUsers = async(page: number) => {
-  return fetch(`https://randomuser.me/api/?results=10&seed=midu&page=${page}`)
-    .then(async (res) => {
-      if (!res.ok) throw new Error("Error");
-      return await res.json();
-    })
-    .then((res) => {
-      const nextCursor = res.info.page;
-      return {
-        results: res.results,
-        nextCursor,
-      }
-      }
-  );
-};
+
 
 
 function App() {
-  
-  const { data, isLoading, isError, refetch, } = 
-  useInfiniteQuery<{nextCursor:number,users:User[]}>({ queryKey: ['users'],queryFn: fetchUsers})
-  
-console.log(data)
-  const [color, setColor] = useState(false);
+
+const {isLoading,isError,users,refetch,fetchNextPage,hasNextPage} = useUsers();
+
+
+const [color, setColor] = useState(false);
   const [sorting, SetSorting] = useState<SortBy>(SortBy.NONE);
   // const originalusers = useRef<User[]>([]);
   const [FilterCountry, setFilterCountry] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // useEffect(() => {
-  //   setLoading(true);
-  //   fetchUsers(currentPage)
-  //     .then((res) => {
-  //       setUsers((prevUsers) => {
-  //         if (currentPage === 1) {
-  //           originalusers.current = res;
-  //           return res;
-  //         }
-  //         const newUsers = prevUsers.concat(res);
-  //         originalusers.current = newUsers;
-  //         return newUsers;
-  //       });
-  //     })
-  //     .catch((err) => {
-  //       setError(true);
-  //       console.log(err);
-  //     })
-  //     .finally(() => setLoading(false));
-  // }, [currentPage]);
-
   function setColorTable() {
     setColor(!color);
   }
@@ -64,8 +26,6 @@ console.log(data)
     SetSorting(newSortyValue);
   }
   const deteleUser = (id: string) => {
-    // const newUsers = users.filter((user) => user.login.uuid !== id);
-    // setUsers(newUsers);
   };
   const setReset = async () => {
     await refetch()
@@ -111,20 +71,19 @@ console.log(data)
         setReset={setReset}
         setFilterCountry={ChangeFilterCountry}
       />
-      {users.length > 0 && (
+     
+      {isLoading && <h1>Loading...</h1>}
+      {!isLoading && isError && <h1>Error</h1>}
+      {!isLoading && !isError && users.length === 0 && <h1>No users</h1>}
+      {!isLoading && !isError && users.length > 0 && 
         <UsersList
           changeSorting={HandleChangeSort}
           users={SortedUsers}
           color={color}
           handleDelete={deteleUser}
-        />
-      )}
-      {isLoading && <h1>Loading...</h1>}
-      {!isLoading && isError && <h1>Error</h1>}
-      {!isLoading && !isError && users.length === 0 && <h1>No users</h1>}
-
-      {!isLoading && !isError && (
-        <button onClick={() => setCurrentPage(currentPage + 1)}>
+        />}
+      {!isLoading && !isError && hasNextPage && (
+        <button onClick={() =>fetchNextPage()}>
           Load more
         </button>
       )}
